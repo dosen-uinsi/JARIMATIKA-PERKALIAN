@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Game Jarimatika</title>
+
+  <style>
+    @import url("https://fonts.googleapis.com/css?family=Inter:400,600,700|Inconsolata:400,700");
+
+    :root {
+      /* Tema Edu-Playful */
+      --primary: #8b5cf6;       /* Ungu Ceria */
+      --primary-hover: #7c3aed;
+      --success: #10b981;       /* Hijau Sukses */
+      --success-hover: #059669;
+      --warning: #f43f5e;       /* Merah/Pink Peringatan */
+      --secondary: #a78bfa;     /* Ungu Muda */
+      --secondary-hover: #8b5cf6;
+      
+      --bg-color: #f5f3ff;      /* Latar Belakang Ungu Sangat Muda */
+      --text-main: #2e1065;     /* Teks Utama Ungu Gelap */
+      --text-light: #5b21b6;    /* Teks Sekunder Ungu Medium */
+      
+      /* Warna Tangan ala Kartun/Emoji */
+      --hand-color: #f59e0b;    /* Telapak Tangan Kuning Gelap/Amber */
+      --finger-off: #fbbf24;    /* Jari Berdiri Kuning Cerah */
+      --finger-on: #ea580c;     /* Jari Dilipat Oranye Kontras */
+      --finger-text: #78350f;   /* Teks Angka Cokelat Gelap */
+      
+      --box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.15), 0 8px 10px -6px rgba(139, 92, 246, 0.1);
+    }
+
+    html, body {
+      min-height: 100vh;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      background: var(--bg-color);
+      overflow-x: hidden;
+      padding: 1.5rem 1rem;
+    }
+
+    input, button { color: inherit; font: inherit; }
+    strong { font-weight: 700; color: #4c1d95; }
+    p { margin: 0 0 0.5em; }
+
+    /* Navigasi Aplikasi */
+    .app-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      background: #ede9fe; /* Warna tab bar */
+      padding: 0.5rem;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-light);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.15);
+    }
+
+    .info {
+      text-align: center;
+      padding: 1.5rem 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: var(--box-shadow);
+      z-index: 10;
+      max-width: 90vw;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    /* CSS UNTUK LOGO APLIKASI - DIPERBESAR */
+    .app-logo {
+      width: 300px; /* Ukuran diperbesar dari 220px menjadi 300px */
+      height: auto;
+      margin: 0 auto 0.5rem auto;
+      display: block;
+      border-radius: 12px;
+      object-fit: contain;
+    }
+
+    .info h1 {
+      font-size: 1.7rem;
+      margin: 0 0 0.5rem;
+      color: var(--primary);
+    }
+
+    .custom-mode-toggle {
+      display: inline-flex;
+      background: #ede9fe;
+      border-radius: 12px;
+      padding: 0.3rem;
+      margin-top: 1rem;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+      width: 100%;
+    }
+
+    .custom-mode-toggle input[type="radio"] { display: none; }
+    .custom-mode-toggle label {
+      flex: 1;
+      justify-content: center;
+      padding: 0.75rem 1rem;
+      font-weight: 600;
+      color: var(--text-light);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-align: center;
+    }
+
+    .custom-mode-toggle input[type="radio"]:checked + label {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+      transform: scale(1.02);
+    }
+
+    .hands {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .hand-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: nowrap;
+      padding-top: 15vmin; 
+      padding-bottom: 5vmin;
+      pointer-events: auto;
+    }
+
+    .hand-container.frozen { pointer-events: none; }
+
+    .hands .hand {
+      background: var(--hand-color);
+      border-radius: 15%;
+      width: 22vmin; 
+      height: 22vmin;
+      position: relative;
+      display: inline-grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      box-shadow: inset 0 -4px 10px rgba(120, 53, 15, 0.2);
+      margin: 0 8vmin; 
+    }
+
+    .hands .hand#hand_2 { transform: scaleX(-1); }
+
+    .hands .finger {
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      position: relative;
+      background-color: var(--finger-off);
+      transition: background 0.3s, transform 0.3s;
+      box-shadow: 0 4px 6px rgba(120, 53, 15, 0.15);
+      
+      --checked-true: scaleY(-1);
+      --checked-false: scaleY(1);
+      --checked: var(--checked-false);
+      --flipped-true: scaleX(-1);
+      --flipped-false: scaleX(1);
+      --flipped: var(--flipped-false);
+
+      transform: var(--checked);
+    }
+
+    .hands .finger:checked {
+      background-color: var(--finger-on);
+      --checked: var(--checked-true);
+    }
+
+    .hands #hand_2 .finger { --flipped: var(--flipped-true); }
+
+    .hands .finger::after {
+      content: attr(data-value);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inconsolata', monospace;
+      font-weight: 700;
+      font-size: 3vmin;
+      height: 100%;
+      color: var(--finger-text);
+      transform: var(--checked) var(--flipped);
+      transition: opacity 0.3s;
+    }
+
+    .hands.hide-labels .finger::after {
+      opacity: 0 !important; 
+    }
+
+    .hands .finger.thumb {
+      border-radius: 25px 0 0 25px;
+      grid-row: 4; grid-column: 1;
+      margin: .5vmin auto; margin-left: -200%; margin-right: 75%;
+      top: -30%; transform-origin: center right;
+      --checked-true: scaleX(-1); --checked-false: scaleX(1);
+    }
+    .hands .finger.index, .hands .finger.middle, .hands .finger.ring, .hands .finger.pinky {
+      border-radius: 25px 25px 0 0;
+      grid-row: 1; margin: auto .5vmin; margin-bottom: 75%;
+      transform-origin: bottom left;
+    }
+    .hands .finger.index { margin-top: -175%; grid-column: 1; }
+    .hands .finger.middle { margin-top: -200%; grid-column: 2; }
+    .hands .finger.ring { margin-top: -180%; grid-column: 3; }
+    .hands .finger.pinky { margin-top: -150%; grid-column: 4; }
+
+    /* Dashboard Layout */
+    .dashboard {
+      background: white;
+      padding: 1.5rem 2rem;
+      border-radius: 16px;
+      box-shadow: var(--box-shadow);
+      text-align: center;
+      min-width: 320px;
+      max-width: 600px;
+      width: 100%;
+      margin-top: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .dashboard.success {
+      background: #ecfdf5; 
+      border: 3px solid var(--success);
+      transform: scale(1.05);
+    }
+
+    .formula-display {
+      font-family: 'Inconsolata', monospace;
+      font-size: 2.5rem;
+      letter-spacing: 0.1rem;
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px dashed #ede9fe;
+    }
+
+    .hands .calculation {
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      color: var(--text-light);
+      margin-bottom: 1rem;
+      min-height: 2em;
+      line-height: 1.5;
+    }
+
+    .hands .total {
+      font-size: 4rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1;
+    }
+
+    /* KUIS UI */
+    .quiz-ui { display: none; } 
+    
+    .score-badge {
+      display: inline-block;
+      background: #fef08a;
+      color: #854d0e;
+      padding: 0.25rem 1rem;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .feedback-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-light);
+      margin: 1rem 0;
+      min-height: 1.5em;
+    }
+
+    .quiz-input-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .quiz-input-box {
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-align: center;
+      width: 100px;
+      padding: 0.5rem;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      color: var(--text-main);
+      outline: none;
+      background: #f5f3ff;
+    }
+    .quiz-input-box:focus { box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3); background: white; }
+
+    .btn-action {
+      background: var(--primary);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      padding: 0.75rem 1.25rem;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .btn-action:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    
+    .btn-action.success { background: var(--success); width: 100%; display: none; font-size: 1.1rem; }
+    
+    .btn-action.secondary { background: var(--secondary); color: white; }
+    .btn-action.secondary:hover { background: var(--secondary-hover); }
+
+    .options-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    .reset {
+      background: var(--primary);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 4px 6px rgba(139, 92, 246, 0.2);
+    }
+    .reset:hover { background: var(--primary-hover); transform: translateY(-2px); }
+    .reset:active { transform: translateY(0); }
+
+    /* ====================================================
+       RESPONSIVE DESIGN KHUSUS UNTUK HP / LAYAR KECIL 
+       ==================================================== */
+    @media (max-width: 600px) {
+      body { padding: 1rem 0.5rem; }
+      
+      .info, .dashboard {
+        padding: 1rem;
+      }
+
+      .app-logo {
+        width: 220px; /* Ukuran logo juga diperbesar untuk HP dari 150px menjadi 220px */
+      }
+      
+      .tab-btn { font-size: 0.9rem; padding: 0.6rem; }
+      
+      .custom-mode-toggle label {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+      }
+
+      .hand-container {
+        padding-top: 25vw; 
+        padding-bottom: 8vw;
+      }
+
+      .hands .hand {
+        width: 36vw; 
+        height: 36vw;
+        margin: 0 4vw;
+      }
+
+      .hands .finger::after {
+        font-size: 4.5vw;
+      }
+
+      .formula-display { font-size: 2rem; }
+      .hands .total { font-size: 3rem; }
+
+      .quiz-input-container {
+        flex-direction: row;
+        width: 100%;
+      }
+
+      .quiz-input-box {
+        width: 80px;
+        flex: none;
+      }
+
+      .btn-action {
+        flex: 1;
+        padding: 0.6rem;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app-tabs">
+    <button class="tab-btn active" id="tab-kalkulator" onclick="switchAppMode('kalkulator')">Kalkulator</button>
+    <button class="tab-btn" id="tab-kuis" onclick="switchAppMode('kuis')">Mode Kuis 🎮</button>
+  </div>
+
+  <div class="info">
+    <img src="https://raw.githubusercontent.com/dosen-uinsi/JARIMATIKA-PERKALIAN/refs/heads/main/JARIMATIKA%202.png" alt="Logo Jarimatika" class="app-logo">
+    
+    <h1 id="app-title">Kalkulator Jarimatika</h1>
+    <p id="instruction-title"><strong>Pilih Level Pembelajaran</strong></p>
+    <p id="instruction-desc" style="color: var(--text-light); font-size: 0.9em; margin-bottom: 0;">Ganti level di bawah ini.</p>
+    
+    <div class="custom-mode-toggle">
+      <input type="radio" id="mode-9" name="calc-mode" value="9" checked>
+      <label for="mode-9">Perkalian 9</label>
+
+      <input type="radio" id="mode-610" name="calc-mode" value="6-10">
+      <label for="mode-610">Perkalian 6 - 10</label>
+    </div>
+  </div>
+
+  <form class="hands" id="hands" onsubmit="event.preventDefault(); if(currentAppMode === 'kuis') checkQuizAnswer();">
+    <div class="hand-container" id="hand-container">
+      <label class="hand" id="hand_1" title="Tangan Kiri">
+        <input type="checkbox" class="finger thumb" id="finger-thumb_1">
+        <input type="checkbox" class="finger index" id="finger-index_1">
+        <input type="checkbox" class="finger middle" id="finger-middle_1">
+        <input type="checkbox" class="finger ring" id="finger-ring_1">
+        <input type="checkbox" class="finger pinky" id="finger-pinky_1">
+      </label>
+
+      <label class="hand" id="hand_2" title="Tangan Kanan">
+        <input type="checkbox" class="finger pinky" id="finger-pinky_2">
+        <input type="checkbox" class="finger ring" id="finger-ring_2">
+        <input type="checkbox" class="finger middle" id="finger-middle_2">
+        <input type="checkbox" class="finger index" id="finger-index_2">
+        <input type="checkbox" class="finger thumb" id="finger-thumb_2">
+      </label>
+    </div>
+
+    <div class="dashboard" id="main-dashboard">
+      <div class="quiz-ui" id="quiz-ui">
+        <div class="score-badge">⭐ Skor: <span id="score">0</span></div>
+      </div>
+
+      <div class="formula-display" id="formula-display">? &times; ?</div>
+      
+      <!-- Kalkulator UI -->
+      <div class="calc-ui" id="calc-ui">
+        <div class="calculation" id="calculation">Mulai lipat jari Anda!</div>
+        <div class="total" id="total">0</div>
+      </div>
+
+      <!-- Kuis UI Bawah -->
+      <div class="quiz-ui" id="quiz-ui-bottom">
+        <div class="feedback-text" id="feedback">Lipat jarimu secara manual dan ketik hasilnya!</div>
+        
+        <!-- Input Jawaban Manual -->
+        <div class="quiz-input-container" id="quiz-input-area">
+          <input type="number" id="quiz-answer" class="quiz-input-box" placeholder="..." autocomplete="off">
+          <button type="button" class="btn-action secondary" onclick="generateQuizQuestion()">Ganti Soal</button>
+          <button type="button" class="btn-action" id="btn-check" onclick="checkQuizAnswer()">Cek ✔️</button>
+        </div>
+
+        <button type="button" class="btn-action success" id="btn-next" onclick="generateQuizQuestion()">Soal Selanjutnya ➡️</button>
+      </div>
+    </div>
+
+    <div class="options-container" id="reset-container">
+      <button type="button" class="reset" id="reset-btn">Reset Jari</button>
+    </div>
+  </form>
+
+  <script>
+    const handsForm = document.getElementById("hands");
+    const modeRadios = document.querySelectorAll('input[name="calc-mode"]');
+    const formulaDisplay = document.getElementById("formula-display");
+    const calculation = document.getElementById("calculation");
+    const totalDisplay = document.getElementById("total");
+    const resetBtn = document.getElementById("reset-btn");
+    const handContainer = document.getElementById("hand-container");
+    const mainDashboard = document.getElementById("main-dashboard");
+    const appTitle = document.getElementById("app-title");
+
+    const scoreDisplay = document.getElementById("score");
+    const feedback = document.getElementById("feedback");
+    const btnNext = document.getElementById("btn-next");
+    const btnCheck = document.getElementById("btn-check");
+    const quizAnswerInput = document.getElementById("quiz-answer");
+    const quizInputArea = document.getElementById("quiz-input-area");
+
+    let currentAppMode = 'kalkulator';
+    let currentQuizA = 0;
+    let currentQuizB = 0;
+    let currentScore = 0;
+
+    const visualOrder = [
+      document.getElementById("finger-thumb_1"), document.getElementById("finger-index_1"),
+      document.getElementById("finger-middle_1"), document.getElementById("finger-ring_1"),
+      document.getElementById("finger-pinky_1"), document.getElementById("finger-pinky_2"),
+      document.getElementById("finger-ring_2"), document.getElementById("finger-middle_2"),
+      document.getElementById("finger-index_2"), document.getElementById("finger-thumb_2")
+    ];
+
+    function getSelectedMode() {
+      return document.querySelector('input[name="calc-mode"]:checked').value;
+    }
+
+    function switchAppMode(mode) {
+      currentAppMode = mode;
+      
+      document.getElementById("tab-kalkulator").classList.toggle("active", mode === 'kalkulator');
+      document.getElementById("tab-kuis").classList.toggle("active", mode === 'kuis');
+
+      const quizElements = document.querySelectorAll('.quiz-ui');
+      const calcElements = document.querySelectorAll('.calc-ui');
+
+      if (mode === 'kuis') {
+        appTitle.textContent = "🎮 Kuis Jarimatika";
+        handsForm.classList.add("hide-labels"); 
+        quizElements.forEach(el => el.style.display = 'block');
+        calcElements.forEach(el => el.style.display = 'none');
+        document.getElementById("reset-container").style.display = 'none';
+        
+        currentScore = 0;
+        scoreDisplay.textContent = currentScore;
+        generateQuizQuestion();
+      } else {
+        appTitle.textContent = "Kalkulator Jarimatika";
+        handsForm.classList.remove("hide-labels"); 
+        quizElements.forEach(el => el.style.display = 'none');
+        calcElements.forEach(el => el.style.display = 'block');
+        document.getElementById("reset-container").style.display = 'flex';
+        
+        resetFingers();
+      }
+    }
+
+    function applyLabels() {
+      const mode = getSelectedMode();
+      const desc = document.getElementById("instruction-desc");
+
+      if (mode === "9") {
+        desc.textContent = "Mode Perkalian 9: Jempol kiri(1) sampai Jempol kanan(10).";
+        visualOrder.forEach((finger, index) => {
+          finger.setAttribute("data-value", index + 1);
+        });
+      } else {
+        desc.textContent = "Mode Perkalian 6-10: (Jempol=6, Telunjuk=7, Tengah=8, Manis=9, Kelingking=10).";
+        const values = { 'thumb': 6, 'index': 7, 'middle': 8, 'ring': 9, 'pinky': 10 };
+        document.querySelectorAll('.finger').forEach(finger => {
+          for (let type in values) {
+            if (finger.classList.contains(type)) {
+              finger.setAttribute('data-value', values[type]);
+            }
+          }
+        });
+      }
+      
+      if(currentAppMode === 'kuis') generateQuizQuestion();
+      else resetFingers();
+    }
+
+    function generateQuizQuestion() {
+      resetFingers();
+      handContainer.classList.remove("frozen");
+      mainDashboard.classList.remove("success");
+      
+      quizAnswerInput.value = "";
+      quizInputArea.style.display = "flex";
+      btnNext.style.display = "none";
+      
+      feedback.textContent = "Lipat jarimu secara manual, lalu ketik jawabannya!";
+      feedback.style.color = "var(--text-light)";
+
+      const mode = getSelectedMode();
+      if (mode === "9") {
+        currentQuizA = 9;
+        currentQuizB = Math.floor(Math.random() * 10) + 1;
+      } else {
+        currentQuizA = Math.floor(Math.random() * 5) + 6;
+        currentQuizB = Math.floor(Math.random() * 5) + 6;
+      }
+
+      formulaDisplay.innerHTML = `${currentQuizA} &times; ${currentQuizB} = ?`;
+    }
+
+    function isStrictFoldCorrect(hand, targetNumber) {
+        const foldedCountTarget = targetNumber - 5;
+        let correctFingersFolded = 0;
+        let incorrectFingersFolded = 0;
+        
+        hand.querySelectorAll('.finger').forEach(f => {
+            const val = parseInt(f.getAttribute('data-value'));
+            if (f.checked) {
+                if (val <= targetNumber) correctFingersFolded++;
+                else incorrectFingersFolded++;
+            }
+        });
+        return (correctFingersFolded === foldedCountTarget && incorrectFingersFolded === 0);
+    }
+
+    function checkQuizAnswer() {
+      const mode = getSelectedMode();
+      
+      if (quizAnswerInput.value === "") {
+        feedback.textContent = "⚠️ Jangan lupa ketik hasil perkaliannya di kolom angka!";
+        feedback.style.color = "var(--warning)";
+        quizAnswerInput.focus();
+        return;
+      }
+
+      const answerVal = parseInt(quizAnswerInput.value);
+      const correctAnswer = currentQuizA * currentQuizB;
+      
+      let isFingerCorrect = false;
+      let isMathCorrect = (answerVal === correctAnswer);
+
+      if (mode === "9") {
+        const checkedFingers = visualOrder.filter(f => f.checked);
+        if (checkedFingers.length === 1) {
+          const activeVal = parseInt(checkedFingers[0].getAttribute('data-value'));
+          if (activeVal === currentQuizB) isFingerCorrect = true;
+        }
+      } else if (mode === "6-10") {
+        const leftHand = document.getElementById("hand_1");
+        const rightHand = document.getElementById("hand_2");
+        
+        let validA = isStrictFoldCorrect(leftHand, currentQuizA) && isStrictFoldCorrect(rightHand, currentQuizB);
+        let validB = isStrictFoldCorrect(leftHand, currentQuizB) && isStrictFoldCorrect(rightHand, currentQuizA);
+        
+        if (validA || validB) isFingerCorrect = true;
+      }
+
+      if (!isMathCorrect && !isFingerCorrect) {
+        feedback.textContent = "❌ Formasi jari salah dan jawaban angkanya juga masih salah.";
+        feedback.style.color = "var(--warning)";
+      } else if (isFingerCorrect && !isMathCorrect) {
+        feedback.textContent = "⚠️ Formasi jari sudah benar, tapi hasil perkaliannya salah. Ayo hitung ulang!";
+        feedback.style.color = "var(--warning)";
+      } else if (!isFingerCorrect && isMathCorrect) {
+        feedback.textContent = "⚠️ Jawaban angkanya benar, tapi susunan jarinya belum tepat!";
+        feedback.style.color = "var(--warning)";
+      } else {
+        formulaDisplay.innerHTML = `${currentQuizA} &times; ${currentQuizB} = ${correctAnswer}`;
+        feedback.textContent = "🎉 TEPAT SEKALI! Formasi Jari & Jawaban Benar! 🎉";
+        feedback.style.color = "var(--success)";
+        
+        mainDashboard.classList.add("success");
+        handContainer.classList.add("frozen");
+        
+        quizInputArea.style.display = "none";
+        btnNext.style.display = "block";
+        
+        currentScore += 10;
+        scoreDisplay.textContent = currentScore;
+      }
+    }
+
+    function runCalculatorLogic() {
+      const mode = getSelectedMode();
+
+      if (mode === "9") {
+        const checkedFingers = visualOrder.filter(f => f.checked);
+        if (checkedFingers.length === 0) {
+          formulaDisplay.innerHTML = `9 &times; ?`;
+          calculation.textContent = "Pilih 1 jari untuk dikalikan dengan 9";
+          totalDisplay.textContent = "0";
+          return;
+        }
+        const activeFinger = checkedFingers[0];
+        const n = parseInt(activeFinger.getAttribute('data-value'));
+        const tens = n - 1;    
+        const ones = 10 - n;   
+        const total = (tens * 10) + ones;
+        formulaDisplay.innerHTML = `9 &times; ${n}`;
+        calculation.textContent = `Puluhan (Kiri): ${tens} | Satuan (Kanan): ${ones}`;
+        totalDisplay.textContent = total;
+
+      } else if (mode === "6-10") {
+        const leftHand = document.getElementById("hand_1");
+        const rightHand = document.getElementById("hand_2");
+        const leftCheckedCount = leftHand.querySelectorAll('.finger:checked').length;
+        const rightCheckedCount = rightHand.querySelectorAll('.finger:checked').length;
+        const numA = 5 + leftCheckedCount;
+        const numB = 5 + rightCheckedCount;
+
+        if (leftCheckedCount === 0 || rightCheckedCount === 0) {
+          formulaDisplay.innerHTML = `${numA} &times; ${numB}`;
+          calculation.textContent = "Bentuk angka di KEDUA tangan (minimal klik jempol di kiri dan kanan).";
+          totalDisplay.textContent = "0";
+          return;
+        }
+        const puluhan = (leftCheckedCount + rightCheckedCount) * 10;
+        const jariBerdiriKiri = 5 - leftCheckedCount;
+        const jariBerdiriKanan = 5 - rightCheckedCount;
+        const satuan = jariBerdiriKiri * jariBerdiriKanan;
+        const total = puluhan + satuan;
+
+        formulaDisplay.innerHTML = `${numA} &times; ${numB}`;
+        calculation.innerHTML = `Puluhan (Jari Dilipat): (${leftCheckedCount} + ${rightCheckedCount}) &times; 10 = <strong>${puluhan}</strong><br>` + 
+                                `Satuan (Jari Berdiri): ${jariBerdiriKiri} &times; ${jariBerdiriKanan} = <strong>${satuan}</strong>`;
+        totalDisplay.textContent = total;
+      }
+    }
+
+    document.querySelectorAll('.finger').forEach(finger => {
+      finger.addEventListener('change', (e) => {
+        if (currentAppMode === 'kalkulator') {
+          const mode = getSelectedMode();
+
+          if (mode === "9" && e.target.checked) {
+            document.querySelectorAll('.finger').forEach(f => {
+              if (f !== e.target) f.checked = false;
+            });
+          } 
+          else if (mode === "6-10") {
+            const hand = e.target.closest('.hand');
+            const val = parseInt(e.target.getAttribute('data-value'));
+            if (e.target.checked) {
+              hand.querySelectorAll('.finger').forEach(f => {
+                if (parseInt(f.getAttribute('data-value')) <= val) f.checked = true;
+              });
+            } else {
+              hand.querySelectorAll('.finger').forEach(f => {
+                if (parseInt(f.getAttribute('data-value')) >= val) f.checked = false;
+              });
+            }
+          }
+          runCalculatorLogic();
+        }
+      });
+    });
+
+    function resetFingers() {
+      document.querySelectorAll('.finger').forEach(f => f.checked = false);
+      if(currentAppMode === 'kalkulator') runCalculatorLogic();
+    }
+
+    modeRadios.forEach(radio => {
+      radio.addEventListener('change', applyLabels);
+    });
+
+    resetBtn.addEventListener('click', resetFingers);
+
+    switchAppMode('kalkulator');
+    applyLabels();
+  </script>
+</body>
+</html>
